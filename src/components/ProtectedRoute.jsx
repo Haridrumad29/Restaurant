@@ -20,7 +20,13 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!user) {
-    return <Navigate to="/staff-login" replace />;
+   
+    if (allowedRoles.includes('admin')) {
+      return <Navigate to="/Admin-login" replace />;
+    } else if (allowedRoles.includes('staff')) {
+      return <Navigate to="/Staff-login" replace />;
+    }
+    return <Navigate to="/" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {

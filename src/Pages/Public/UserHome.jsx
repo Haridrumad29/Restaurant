@@ -11,68 +11,44 @@ import CartModal from '../../components/CartModal';
 import Toast from '../../components/Toast';
 import { menuData } from '../../data/menuData';
 import '../../App.css';
+import { useCart } from '../../hooks/useCart';
+import { useNotification } from '../../hooks/useNotification';
 
 function UserHome() {
-  const [cart, setCart] = useState([]);
   const [currentFilter, setCurrentFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showCartModal, setShowCartModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  const addToCart = (id, name, price, image) => {
-    const existingItem = cart.find(item => item.id === parseInt(id));
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === parseInt(id) 
-          ? { ...item, quantity: item.quantity + 1 } 
-          : item
-      ));
-    } else {
-      setCart([...cart, { 
-        id: parseInt(id), 
-        name, 
-        price: parseInt(price), 
-        image, 
-        quantity: 1 
-      }]);
-    }
-    displayToast(`${name} added to cart!`);
-  };
+  const { cart, addToCart, removeFromCart: removeItem, updateQuantity, clearCart: clearCartContext, total } = useCart();
+  const { showNotification } = useNotification();
 
   const removeFromCart = (id) => {
+    removeItem(parseInt(id));
     const item = cart.find(item => item.id === parseInt(id));
     if (item) {
-      if (item.quantity > 1) {
-        setCart(cart.map(item => 
-          item.id === parseInt(id) 
-            ? { ...item, quantity: item.quantity - 1 } 
-            : item
-        ));
-      } else {
-        setCart(cart.filter(item => item.id !== parseInt(id)));
-      }
+      displayToast(`${item.name} removed from cart`);
     }
   };
 
   const increaseQuantity = (id) => {
-    setCart(cart.map(item => 
-      item.id === parseInt(id) 
-        ? { ...item, quantity: item.quantity + 1 } 
-        : item
-    ));
+    const item = cart.find(item => item.id === parseInt(id));
+    if (item) {
+      updateQuantity(parseInt(id), item.quantity + 1);
+    }
   };
 
   const deleteFromCart = (id) => {
     const item = cart.find(item => item.id === parseInt(id));
     if (item) {
-      setCart(cart.filter(item => item.id !== parseInt(id)));
+      removeItem(parseInt(id));
       displayToast(`${item.name} removed from cart`);
     }
   };
 
   const clearCart = () => {
-    setCart([]);
+    clearCartContext();
     displayToast('Cart cleared!');
   };
 
@@ -88,11 +64,7 @@ function UserHome() {
   };
 
   const calculateTotals = () => {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const delivery = subtotal > 0 ? 30 : 0;
-    const tax = Math.round(subtotal * 0.05);
-    const total = subtotal + delivery + tax;
-    return { subtotal, delivery, tax, total };
+    return total;
   };
 
   return (

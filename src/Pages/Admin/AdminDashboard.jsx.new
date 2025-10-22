@@ -35,7 +35,7 @@ function AdminDashboard() {
   ]);
 
   useEffect(() => {
-   
+    // Simulated data - replace with actual API calls
     setStats({
       totalItems: 24,
       totalCategories: 6,

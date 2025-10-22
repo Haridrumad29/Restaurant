@@ -1,31 +1,48 @@
 import React, { useState } from "react";
+import './CheckoutForm.css';
 
-function CheckoutForm({ cart, totals, onBack, onSubmit }) {
-    const [loading, setLoading] = useState(false);
+function CheckoutForm({ cart, total, onBack, onSubmit }) {
     const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        phone: "",
+        name: "",
         address: "",
-        city: "Taste City",
-        pincode: "",
+        mobile: "",
+        paymentMode: "cod"
     });
 
+    const [showUpiQr, setShowUpiQr] = useState(false);
+
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        if (name === 'paymentMode') {
+            setShowUpiQr(value === 'upi');
+        }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setLoading(true);
+        
+        if (!formData.name.trim()) {
+            alert('Please enter your name');
+            return;
+        }
+        if (!formData.address.trim()) {
+            alert('Please enter your address');
+            return;
+        }
+        if (!formData.mobile.trim() || !/^[0-9]{10}$/.test(formData.mobile)) {
+            alert('Please enter a valid 10-digit mobile number');
+            return;
+        }
 
         const orderData = {
+            ...formData,
             items: cart,
-            customer: formData,
-            totals: totals,
+            total: total,
             orderTime: new Date().toISOString(),
         };
 
@@ -34,111 +51,113 @@ function CheckoutForm({ cart, totals, onBack, onSubmit }) {
 
     return (
         <div className="checkout-form">
-            <h3 style={{ marginBottom: "var(--space-24)" }}>Delivery Details</h3>
+            <div className="checkout-header">
+                <button className="back-button" onClick={onBack}>← Back to Cart</button>
+                <h2>Checkout</h2>
+            </div>
+
             <form onSubmit={handleSubmit}>
-                <div className="form-row">
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="firstName">
-                            First Name
-                        </label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            id="firstName"
-                            name="firstName"
-                            value={formData.firstName}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="lastName">
-                            Last Name
-                        </label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            id="lastName"
-                            name="lastName"
-                            value={formData.lastName}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                </div>
                 <div className="form-group">
-                    <label className="form-label" htmlFor="phone">
-                        Phone Number
-                    </label>
+                    <label htmlFor="name">Full Name</label>
                     <input
-                        type="tel"
-                        className="form-input"
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
                         onChange={handleChange}
+                        placeholder="Enter your full name"
                         required
                     />
                 </div>
+
                 <div className="form-group">
-                    <label className="form-label" htmlFor="address">
-                        Delivery Address
-                    </label>
-                    <input
-                        type="text"
-                        className="form-input"
+                    <label htmlFor="address">Delivery Address</label>
+                    <textarea
                         id="address"
                         name="address"
                         value={formData.address}
                         onChange={handleChange}
+                        placeholder="Enter your complete address"
                         required
                     />
                 </div>
-                <div className="form-row">
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="city">
-                            City
+
+                <div className="form-group">
+                    <label htmlFor="mobile">Mobile Number</label>
+                    <input
+                        type="tel"
+                        id="mobile"
+                        name="mobile"
+                        value={formData.mobile}
+                        onChange={handleChange}
+                        placeholder="Enter your 10-digit mobile number"
+                        pattern="[0-9]{10}"
+                        required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Payment Mode</label>
+                    <div className="payment-options">
+                        <label className="payment-option">
+                            <input
+                                type="radio"
+                                name="paymentMode"
+                                value="cod"
+                                checked={formData.paymentMode === 'cod'}
+                                onChange={handleChange}
+                            />
+                            Cash on Delivery
                         </label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            id="city"
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="pincode">
-                            PIN Code
+                        <label className="payment-option">
+                            <input
+                                type="radio"
+                                name="paymentMode"
+                                value="upi"
+                                checked={formData.paymentMode === 'upi'}
+                                onChange={handleChange}
+                            />
+                            UPI Payment
                         </label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            id="pincode"
-                            name="pincode"
-                            value={formData.pincode}
-                            onChange={handleChange}
-                            required
-                        />
                     </div>
                 </div>
-                <div className="cart-actions" style={{ marginTop: "var(--space-24)" }}>
-                    <button type="button" className="btn btn--secondary" onClick={onBack}>
-                        Back to Cart
-                    </button>
-                    <button type="submit" className="btn btn--primary" disabled={loading}>
-                        {loading ? (
-                            <div className="loading">
-                                <div className="spinner"></div>
-                                Processing...
-                            </div>
-                        ) : (
-                            "Place Order"
-                        )}
-                    </button>
+
+                {showUpiQr && (
+                    <div className="upi-section">
+                        <h3>Scan QR to Pay ₹{total.total}</h3>
+                        <div className="qr-code">
+                            <img 
+                                src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" 
+                                alt="UPI QR Code"
+                                style={{ width: '200px', height: '200px' }}
+                            />
+                        </div>
+                        <p>Please complete the payment before placing the order</p>
+                    </div>
+                )}
+
+                <div className="order-summary">
+                    <div className="summary-row">
+                        <span>Subtotal:</span>
+                        <span>₹{total.subtotal}</span>
+                    </div>
+                    <div className="summary-row">
+                        <span>Delivery:</span>
+                        <span>₹{total.delivery}</span>
+                    </div>
+                    <div className="summary-row">
+                        <span>Tax (5%):</span>
+                        <span>₹{total.tax}</span>
+                    </div>
+                    <div className="summary-row total">
+                        <span>Total:</span>
+                        <span>₹{total.total}</span>
+                    </div>
                 </div>
+
+                <button type="submit" className="place-order-btn">
+                    Place Order
+                </button>
             </form>
         </div>
     );

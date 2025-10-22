@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
+import './Login.css';
 
 function StaffLogin() {
   const [email, setEmail] = useState('');
@@ -9,14 +10,19 @@ function StaffLogin() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = login(email, password, 'staff');
-    
-    if (result.success) {
-      navigate('/Staff/dashboard');
-    } else {
-      setError(result.message);
+    try {
+      const result = login(email, password, 'staff');
+      
+      if (result.success) {
+        navigate('/Staff/dashboard', { replace: true });
+      } else {
+        setError(result.message || 'Invalid credentials');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
+      console.error('Login error:', err);
     }
   };
 
@@ -33,7 +39,7 @@ function StaffLogin() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="staff@flavorburst.com"
+              placeholder="Enter your email"
               required
             />
           </div>
@@ -49,11 +55,6 @@ function StaffLogin() {
           </div>
           <button type="submit" className="login-btn">Login</button>
         </form>
-        <div className="login-info">
-          <p>Demo credentials:</p>
-          <p><strong>Email:</strong> staff@flavorburst.com</p>
-          <p><strong>Password:</strong> staff123</p>
-        </div>
       </div>
     </div>
   );
