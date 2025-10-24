@@ -1,9 +1,32 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export const CartContext = createContext(null);
+
+const defaultCartContext = {
+  cart: [],
+  total: { subtotal: 0, delivery: 0, tax: 0, total: 0 },
+  addToCart: () => {},
+  removeFromCart: () => {},
+  updateQuantity: () => {},
+  clearCart: () => {}
+};
+
+
+const isValidCartItem = (item) => {
+  return (
+    item &&
+    typeof item === 'object' &&
+    (typeof item.id === 'string' || typeof item.id === 'number') &&
+    typeof item.name === 'string' &&
+    !isNaN(Number(item.price)) &&
+    !isNaN(Number(item.quantity)) &&
+    item.quantity > 0
+  );
+};
+
+export const CartContext = createContext(defaultCartContext);
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(defaultCartContext.cart);
   const [total, setTotal] = useState({
     subtotal: 0,
     delivery: 0,
@@ -12,15 +35,30 @@ export const CartProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    const storedCart = localStorage.getItem('cart');
-    if (storedCart) {
-      try {
-        const parsedCart = JSON.parse(storedCart);
-        setCart(parsedCart);
-      } catch (error) {
-        console.error('Error parsing stored cart:', error);
+    try {
+      const storedCart = localStorage.getItem('cart');
+      if (!storedCart) return;
+
+      const parsedCart = JSON.parse(storedCart);
+      if (!Array.isArray(parsedCart)) {
+        console.error('Stored cart is not an array');
         localStorage.removeItem('cart');
+        return;
       }
+
+      
+      const validCart = parsedCart.filter(item => {
+        const isValid = isValidCartItem(item);
+        if (!isValid) {
+          console.error('Invalid cart item:', item);
+        }
+        return isValid;
+      });
+
+      setCart(validCart);
+    } catch (error) {
+      console.error('Error loading stored cart:', error);
+      localStorage.removeItem('cart');
     }
   }, []);
 
@@ -37,7 +75,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      // Calculate subtotal
+      
       const subtotal = cart.reduce((sum, item) => {
         const price = Number(item.price);
         const quantity = Number(item.quantity);
@@ -50,12 +88,12 @@ export const CartProvider = ({ children }) => {
         return sum + (price * quantity);
       }, 0);
 
-      // Calculate other values
+     
       const delivery = cart.length > 0 ? 30 : 0;
       const tax = Math.round(subtotal * 0.05);
       const finalTotal = subtotal + delivery + tax;
 
-      // Update totals
+     
       setTotal({
         subtotal: Math.round(subtotal),
         delivery,
@@ -63,7 +101,7 @@ export const CartProvider = ({ children }) => {
         total: Math.round(finalTotal)
       });
 
-      // Save cart to localStorage
+      
       localStorage.setItem('cart', JSON.stringify(cart));
     } catch (error) {
       console.error('Error calculating cart totals:', error);
@@ -76,52 +114,110 @@ export const CartProvider = ({ children }) => {
     }
   }, [cart]);
 
+  const validateItem = (id, name, price) => {
+    if (!id || typeof id !== 'string' && typeof id !== 'number') {
+      console.error('Invalid item ID:', id);
+      return false;
+    }
+    if (!name || typeof name !== 'string') {
+      console.error('Invalid item name:', name);
+      return false;
+    }
+    if (!price || isNaN(Number(price))) {
+      console.error('Invalid item price:', price);
+      return false;
+    }
+    return true;
+  };
+
   const addToCart = (id, name, price, image) => {
+    if (!validateItem(id, name, price)) {
+      return;
+    }
+
     setCart(prevCart => {
-      const existingItem = prevCart.find(i => i.id === id);
-      if (existingItem) {
-        return prevCart.map(i => 
-          i.id === id 
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        );
+      try {
+        const existingItem = prevCart.find(i => i.id === id);
+        if (existingItem) {
+          return prevCart.map(i => 
+            i.id === id 
+              ? { ...i, quantity: i.quantity + 1 }
+              : i
+          );
+        }
+        return [...prevCart, { 
+          id, 
+          name, 
+          price: Number(price), 
+          image: image || '', 
+          quantity: 1 
+        }];
+      } catch (error) {
+        console.error('Error adding item to cart:', error);
+        return prevCart;
       }
-      return [...prevCart, { 
-        id, 
-        name, 
-        price: Number(price), 
-        image, 
-        quantity: 1 
-      }];
     });
   };
 
   const removeFromCart = (itemId) => {
+    if (!itemId || (typeof itemId !== 'string' && typeof itemId !== 'number')) {
+      console.error('Invalid item ID:', itemId);
+      return;
+    }
+
     setCart(prevCart => {
-      const existingItem = prevCart.find(i => i.id === itemId);
-      if (existingItem && existingItem.quantity > 1) {
-        return prevCart.map(i =>
-          i.id === itemId
-            ? { ...i, quantity: i.quantity - 1 }
-            : i
-        );
+      try {
+        const existingItem = prevCart.find(i => i.id === itemId);
+        if (existingItem && existingItem.quantity > 1) {
+          return prevCart.map(i =>
+            i.id === itemId
+              ? { ...i, quantity: i.quantity - 1 }
+              : i
+          );
+        }
+        return prevCart.filter(i => i.id !== itemId);
+      } catch (error) {
+        console.error('Error removing item from cart:', error);
+        return prevCart;
       }
-      return prevCart.filter(i => i.id !== itemId);
     });
   };
 
   const updateQuantity = (itemId, quantity) => {
-    if (quantity < 1) {
+    if (!itemId || (typeof itemId !== 'string' && typeof itemId !== 'number')) {
+      console.error('Invalid item ID:', itemId);
+      return;
+    }
+
+    const newQuantity = Number(quantity);
+    if (isNaN(newQuantity) || newQuantity < 0) {
+      console.error('Invalid quantity:', quantity);
+      return;
+    }
+
+    if (newQuantity === 0) {
       removeFromCart(itemId);
       return;
     }
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === itemId
-          ? { ...item, quantity }
-          : item
-      )
-    );
+
+    setCart(prevCart => {
+      try {
+        const existingItem = prevCart.find(item => item.id === itemId);
+        if (!existingItem) {
+          console.error('Item not found in cart:', itemId);
+          return prevCart;
+        }
+
+        return prevCart.map(item =>
+          item.id === itemId
+            ? { ...item, quantity: newQuantity }
+            : item
+        );
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        return prevCart;
+      }
+    });
   };
 
   const clearCart = () => {

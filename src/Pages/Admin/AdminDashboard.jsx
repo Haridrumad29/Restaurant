@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './AdminDashboard.css';
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -10,35 +9,11 @@ function AdminDashboard() {
     revenue: 0
   });
 
-  const [recentActivity, setRecentActivity] = useState([
-    {
-      id: 1,
-      type: 'order',
-      message: 'New order received',
-      time: '5 minutes ago',
-      icon: '🛍️'
-    },
-    {
-      id: 2,
-      type: 'item',
-      message: 'Menu item "Spicy Burger" updated',
-      time: '1 hour ago',
-      icon: '🍔'
-    },
-    {
-      id: 3,
-      type: 'category',
-      message: 'New category "Beverages" added',
-      time: '2 hours ago',
-      icon: '📑'
-    }
-  ]);
-
   useEffect(() => {
    
     setStats({
       totalItems: 24,
-      totalCategories: 6,
+      totalCategories: 4,
       totalOrders: 156,
       revenue: 45670
     });
@@ -75,29 +50,14 @@ function AdminDashboard() {
             Manage Items
           </Link>
           <Link to="/Admin/categories" className="action-btn">
-            <span className="icon">📑</span>
+            <span className="icon">📁</span>
             Manage Categories
           </Link>
           <Link to="/Admin/qr-generator" className="action-btn">
             <span className="icon">📱</span>
-            QR Generator
+            Generate QR Codes
           </Link>
         </div>
-      </div>
-
-      <div className="recent-activity">
-        <h2>Recent Activity</h2>
-        <ul className="activity-list">
-          {recentActivity.map(activity => (
-            <li key={activity.id} className="activity-item">
-              <div className="activity-icon">{activity.icon}</div>
-              <div className="activity-details">
-                <p>{activity.message}</p>
-                <span className="activity-time">{activity.time}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );

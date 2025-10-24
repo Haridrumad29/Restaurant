@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+.app {
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+}
+
 :root {
       --color-white: rgba(255, 255, 255, 1);
       --color-black: rgba(0, 0, 0, 1);
@@ -1269,21 +1276,27 @@
     }
 
    
-    @keyframes bounce {
-      0%, 20%, 53%, 80%, 100% {
-        transform: translate3d(0, 0, 0);
-      }
-      40%, 43% {
-        transform: translate3d(0, -8px, 0);
-      }
-      70% {
-        transform: translate3d(0, -4px, 0);
-      }
-      90% {
-        transform: translate3d(0, -2px, 0);
-      }
-    }
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
 
-    .bounce {
-      animation: bounce 1s ease;
-    }
+.bounce {
+  animation: bounce 1s ease;
+}
+
+/* #container{
+  width: 300px;
+  height: 300px;
+  background-color: blueviolet
+} */

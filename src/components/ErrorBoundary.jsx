@@ -1,33 +1,23 @@
 import React from 'react';
+import { useRouteError, Link } from 'react-router-dom';
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+export default function ErrorBoundary() {
+  const error = useRouteError();
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+      ? error
+      : 'An unexpected error occurred.';
 
-  componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="error-boundary">
-          <h1>Something went wrong.</h1>
-          <button onClick={() => window.location.reload()}>
-            Refresh Page
-          </button>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
+  return (
+    <div className="error-container">
+      <h1>Oops! Something went wrong</h1>
+      <p>{message}</p>
+      <Link to="/" className="back-link">
+        Return to Home
+      </Link>
+    </div>
+  );
 }
-
-export default ErrorBoundary;

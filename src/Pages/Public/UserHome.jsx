@@ -21,34 +21,42 @@ function UserHome() {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  const { cart, addToCart, removeFromCart: removeItem, updateQuantity, clearCart: clearCartContext, total } = useCart();
+  const { cart, addToCart } = useCart();
   const { showNotification } = useNotification();
 
   const removeFromCart = (id) => {
-    removeItem(parseInt(id));
     const item = cart.find(item => item.id === parseInt(id));
     if (item) {
-      displayToast(`${item.name} removed from cart`);
+      if (item.quantity > 1) {
+        setCart(cart.map(item => 
+          item.id === parseInt(id) 
+            ? { ...item, quantity: item.quantity - 1 } 
+            : item
+        ));
+      } else {
+        setCart(cart.filter(item => item.id !== parseInt(id)));
+      }
     }
   };
 
   const increaseQuantity = (id) => {
-    const item = cart.find(item => item.id === parseInt(id));
-    if (item) {
-      updateQuantity(parseInt(id), item.quantity + 1);
-    }
+    setCart(cart.map(item => 
+      item.id === parseInt(id) 
+        ? { ...item, quantity: item.quantity + 1 } 
+        : item
+    ));
   };
 
   const deleteFromCart = (id) => {
     const item = cart.find(item => item.id === parseInt(id));
     if (item) {
-      removeItem(parseInt(id));
+      setCart(cart.filter(item => item.id !== parseInt(id)));
       displayToast(`${item.name} removed from cart`);
     }
   };
 
   const clearCart = () => {
-    clearCartContext();
+    setCart([]);
     displayToast('Cart cleared!');
   };
 
@@ -64,7 +72,11 @@ function UserHome() {
   };
 
   const calculateTotals = () => {
-    return total;
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const delivery = subtotal > 0 ? 30 : 0;
+    const tax = Math.round(subtotal * 0.05);
+    const total = subtotal + delivery + tax;
+    return { subtotal, delivery, tax, total };
   };
 
   return (

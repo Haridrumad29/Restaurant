@@ -2,13 +2,9 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'user';
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
 
   useEffect(() => {
     
@@ -20,9 +16,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (email, password, role) => {
-    // Clear any existing auth data
-    localStorage.removeItem('user');
-    setUser(null);
     
     const users = {
       admin: { 
@@ -37,18 +30,12 @@ export const AuthProvider = ({ children }) => {
         role: 'staff', 
         name: 'Staff Member' 
       },
-      user: { 
-        email: 'user@example.com', 
-        password: 'user123', 
-        role: 'user', 
-        name: 'Customer' 
-      },
     };
 
     const userKey = Object.keys(users).find(key => 
       users[key].email === email && 
       users[key].password === password && 
-      users[key].role === role.toLowerCase()
+      users[key].role === role
     );
 
     if (userKey) {

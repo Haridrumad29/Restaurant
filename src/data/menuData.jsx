@@ -1,63 +1,4 @@
 
-
-/**
- * @typedef {Object} MenuItem
- * @property {number} id 
- * @property {string} name 
- * @property {string} description 
- * @property {number} price 
- * @property {string} image 
- * @property {number} rating 
- * @property {number} reviews 
- * @property {string[]} tags 
- * @property {string} prepTime 
- * @property {string} category 
- * @property {PriceVariant[]} [variants] 
- * @property {string[]} [allergens] 
- * @property {NutritionalInfo} [nutritionalInfo] 
- */
-
-/**
- * @typedef {Object} CategoryInfo
- * @property {string} name 
- * @property {string} description 
- * @property {string} image 
- */
-
-
-export const categoryInfo = {
-  burgers: {
-    name: "Burgers",
-    description: "Juicy and flavorful burgers with premium ingredients",
-    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=600&auto=format&fit=crop&q=60",
-  },
-  pizzas: {
-    name: "Pizzas",
-    description: "Hand-tossed pizzas with fresh toppings",
-    image: "https://plus.unsplash.com/premium_photo-1671559020929-0a19de16da14?w=600&auto=format&fit=crop&q=60",
-  },
-  wraps: {
-    name: "Wraps",
-    description: "Fresh and healthy wraps made to order",
-    image: "https://images.unsplash.com/photo-1666819476544-38ea4e57a3d0?w=600&auto=format&fit=crop&q=60",
-  },
-  drinks: {
-    name: "Drinks",
-    description: "Refreshing cold beverages and soft drinks",
-    image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=600&auto=format&fit=crop&q=60",
-  },
-  smoothies: {
-    name: "Smoothies",
-    description: "Fresh fruit smoothies made with natural ingredients",
-    image: "https://plus.unsplash.com/premium_photo-1727119506444-6a9feb551521?w=600&auto=format&fit=crop&q=60",
-  },
-  beverages: {
-    name: "Hot Beverages",
-    description: "Aromatic coffee, hot chocolate, and more",
-    image: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600&auto=format&fit=crop&q=60",
-  }
-};
-
 export const menuData = {
   burgers: [
     {
@@ -263,34 +204,4 @@ export const menuData = {
       category: "beverages"
     }
   ]
-};
-
-
-export const getAllMenuItems = () => {
-  return Object.values(menuData).flat();
-};
-
-export const getItemById = (id) => {
-  return getAllMenuItems().find(item => item.id === parseInt(id));
-};
-
-export const getItemsByCategory = (category) => {
-  return menuData[category] || [];
-};
-
-export const getItemsByTag = (tag) => {
-  return getAllMenuItems().filter(item => item.tags.includes(tag.toLowerCase()));
-};
-
-export const getCategoryInfo = (category) => {
-  return categoryInfo[category];
-};
-
-export const searchMenuItems = (query) => {
-  query = query.toLowerCase();
-  return getAllMenuItems().filter(item => 
-    item.name.toLowerCase().includes(query) ||
-    item.description.toLowerCase().includes(query) ||
-    item.tags.some(tag => tag.toLowerCase().includes(query))
-  );
 };

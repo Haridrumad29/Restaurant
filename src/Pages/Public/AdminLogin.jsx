@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
-import './Login.css';
 
 function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -10,19 +9,14 @@ function AdminLogin() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const result = login(email, password, 'admin');
-      
-      if (result.success) {
-        navigate('/Admin/dashboard', { replace: true });
-      } else {
-        setError(result.message || 'Invalid credentials');
-      }
-    } catch (err) {
-      setError('An error occurred during login');
-      console.error('Login error:', err);
+    const result = login(email, password, 'admin');
+    
+    if (result.success) {
+      navigate('/Admin/dashboard');
+    } else {
+      setError(result.message);
     }
   };
 
@@ -39,7 +33,7 @@ function AdminLogin() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="admin@flavorburst.com"
               required
             />
           </div>
@@ -55,6 +49,11 @@ function AdminLogin() {
           </div>
           <button type="submit" className="login-btn">Login</button>
         </form>
+        <div className="login-info">
+          <p>Demo credentials:</p>
+          <p><strong>Email:</strong> admin@flavorburst.com</p>
+          <p><strong>Password:</strong> admin123</p>
+        </div>
       </div>
     </div>
   );

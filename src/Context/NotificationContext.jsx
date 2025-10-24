@@ -1,45 +1,35 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useState, useCallback } from 'react';
 
 export const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
-  const [notifications, setNotifications] = useState([]);
+  const [notification, setNotification] = useState(null);
 
-  const showNotification = (message, type = 'info', duration = 3000) => {
-    const id = Date.now();
-    setNotifications(prev => [...prev, { id, message, type }]);
+  const showNotification = useCallback((message, type = 'info') => {
+    setNotification({ message, type });
     setTimeout(() => {
-      setNotifications(prev => prev.filter(notification => notification.id !== id));
-    }, duration);
+      setNotification(null);
+    }, 3000); 
+  }, []);
+
+  const hideNotification = useCallback(() => {
+    setNotification(null);
+  }, []);
+
+  const value = {
+    notification,
+    showNotification,
+    hideNotification
   };
 
   return (
-    <NotificationContext.Provider value={{ notifications, showNotification }}>
+    <NotificationContext.Provider value={value}>
       {children}
-      {/* Notification display component */}
-      <div className="notification-container">
-        {notifications.map(({ id, message, type }) => (
-          <div key={id} className={`notification notification-${type}`}>
-            {message}
-          </div>
-        ))}
-      </div>
+      {notification && (
+        <div className={`notification notification-${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
     </NotificationContext.Provider>
   );
 };
-
-export const useNotification = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotification must be used within a NotificationProvider');
-  }
-  return context;
-};
-
-function YourComponent() {
-  const { user, logout } = useAuth();
-  const { cart, addToCart } = useCart();
-  const { showNotification } = useNotification();
-  
-  // Use them in your component
-}
